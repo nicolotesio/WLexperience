@@ -1,12 +1,12 @@
-export type MealType = 'Primo' | 'Secondo' | 'Dessert' | 'Snack' | 'Altro';
+export type MealComposition = 'Snack dolce' | 'Snack salato' | 'Primo' | 'Secondo' | 'Dessert' | 'Frutta';
 
 export type Meal = {
   id: string;
   created_at: string;
   meal_datetime: string;
   user_name: 'Silvia' | 'Nicolò';
-  description: string;
-  meal_type: MealType;
+  description?: string | null;
+  meal_composition: MealComposition[];
   satisfied: boolean;
   hunger_level?: number | null;
   notes?: string | null;

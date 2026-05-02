@@ -69,12 +69,20 @@ create table if not exists meals (
   meal_datetime timestamptz not null,
   user_name text check (user_name in ('Silvia', 'Nicolò')) not null,
   description text not null,
-  meal_type text check (meal_type in ('Primo', 'Secondo', 'Dessert', 'Snack', 'Altro')) not null,
+  meal_composition text[] not null,
   satisfied boolean not null,
   hunger_level int check (hunger_level between 1 and 5),
   notes text
 );
 ```
+
+Se hai già una tabella esistente, puoi aggiornare lo schema con:
+
+```sql
+alter table meals drop column if exists meal_type;
+alter table meals add column if not exists meal_composition text[] not null default array[]::text[];
+```
+
 
 4. Imposta le variabili environment nella tua app Vercel o nel file `.env` locale.
 

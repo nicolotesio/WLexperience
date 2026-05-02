@@ -61,3 +61,30 @@ export async function addMealClient(meal: MealInput): Promise<Meal> {
 
   return data;
 }
+
+export async function updateMealClient(id: string, updates: Partial<MealInput>): Promise<Meal> {
+  assertSupabase();
+  const supabaseClient = getSupabaseClient();
+  const { data, error } = await supabaseClient
+    .from('meals')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function deleteMealClient(id: string): Promise<void> {
+  assertSupabase();
+  const supabaseClient = getSupabaseClient();
+  const { error } = await supabaseClient.from('meals').delete().eq('id', id);
+
+  if (error) {
+    throw error;
+  }
+}

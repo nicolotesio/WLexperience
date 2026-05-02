@@ -2,19 +2,21 @@
 
 import { useMemo, useState } from 'react';
 import { addMealClient } from '@/lib/meals';
-import { MealInput } from '@/types/meal';
+import { MealComposition, MealInput } from '@/types/meal';
+
+const compositionOptions = ['Snack dolce', 'Snack salato', 'Primo', 'Secondo', 'Dessert', 'Frutta'] as const;
+
+type CompositionOption = (typeof compositionOptions)[number];
 
 const initialState: MealInput = {
   meal_datetime: new Date().toISOString().slice(0, 16),
   user_name: 'Silvia',
   description: '',
-  meal_type: 'Primo',
+  meal_composition: ['Primo'],
   satisfied: true,
   hunger_level: undefined,
-  notes: '',
+  notes: null,
 };
-
-const mealTypes = ['Primo', 'Secondo', 'Dessert', 'Snack', 'Altro'] as const;
 
 export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   const [form, setForm] = useState<MealInput>(initialState);
@@ -22,16 +24,27 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const isValid = useMemo(() => form.description.trim().length > 0 && form.meal_datetime.trim().length > 0, [form]);
+  const isValid = useMemo(
+    () => form.meal_datetime.trim().length > 0 && form.meal_composition.length > 0,
+    [form],
+  );
 
   const handleChange = <K extends keyof MealInput>(field: K, value: MealInput[K]) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const toggleComposition = (option: CompositionOption) => {
+    const next = form.meal_composition.includes(option)
+      ? form.meal_composition.filter((item) => item !== option)
+      : [...form.meal_composition, option];
+
+    setForm((current) => ({ ...current, meal_composition: next }));
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isValid) {
-      setError('Compila tutti i campi obbligatori prima di inviare.');
+      setError('Compila tutti i campi obbligatori prima di inviare e seleziona almeno una composizione.');
       return;
     }
 
@@ -42,11 +55,11 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
       const payload: MealInput = {
         meal_datetime: new Date(form.meal_datetime).toISOString(),
         user_name: form.user_name,
-        description: form.description.trim(),
-        meal_type: form.meal_type,
+        description: form.description?.trim() || null,
+        meal_composition: form.meal_composition,
         satisfied: form.satisfied,
         hunger_level: form.hunger_level ? Number(form.hunger_level) : null,
-        notes: form.notes?.trim() || null,
+        notes: null,
       };
 
       await addMealClient(payload);
@@ -67,7 +80,6 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="space-y-4">
         <div>
           <h2 className="text-2xl font-semibold text-slate-900">Aggiungi un pasto</h2>
-          <p className="text-sm text-slate-500">Registra il pasto consumato da Silvia o Nicolò con un tono positivo e chiaro.</p>
         </div>
 
         <form className="grid gap-4" onSubmit={handleSubmit}>
@@ -96,34 +108,33 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </label>
           </div>
 
-          <label className="grid gap-2 text-sm text-slate-700">
-            Descrizione
-            <textarea
-              value={form.description}
-              onChange={(event) => handleChange('description', event.target.value)}
-              placeholder="Cosa hai mangiato?"
-              rows={4}
-              className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-              required
-            />
-          </label>
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
+              <span>Composizione pasto</span>
+              <span className="text-slate-500">Seleziona almeno una voce</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {compositionOptions.map((option) => {
+                const isSelected = form.meal_composition.includes(option);
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => toggleComposition(option)}
+                    className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition ${
+                      isSelected
+                        ? 'border-brand-500 bg-brand-500 text-white shadow-sm'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <label className="grid gap-2 text-sm text-slate-700">
-              Tipo pasto
-              <select
-                value={form.meal_type}
-                onChange={(event) => handleChange('meal_type', event.target.value as MealInput['meal_type'])}
-                className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-              >
-                {mealTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </label>
-
             <label className="grid gap-2 text-sm text-slate-700">
               Stato pasto
               <select
@@ -153,15 +164,19 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </label>
           </div>
 
-          <label className="grid gap-2 text-sm text-slate-700">
-            Note (opzionale)
-            <textarea
-              value={form.notes ?? ''}
-              onChange={(event) => handleChange('notes', event.target.value)}
-              rows={3}
-              className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-            />
-          </label>
+          <div className="grid gap-4">
+            <h3 className="text-sm font-semibold text-slate-700">Descrizione e note</h3>
+            <label className="grid gap-2 text-sm text-slate-700">
+              Descrizione (opzionale)
+              <textarea
+                value={form.description || ''}
+                onChange={(event) => handleChange('description', event.target.value)}
+                placeholder="Cosa hai mangiato?"
+                rows={4}
+                className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              />
+            </label>
+          </div>
 
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
           {success ? <p className="text-sm text-emerald-700">{success}</p> : null}

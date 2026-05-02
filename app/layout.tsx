@@ -4,7 +4,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
-  title: 'WLexperience | Food Live Blog',
+  title: 'WL-EXPERIENCE | Food Live Blog',
   description: 'Live blog dei pasti per Silvia e Nicolò, con resoconto alimentare e grafici motivazionali.',
 };
 
