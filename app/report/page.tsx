@@ -115,7 +115,7 @@ export default function ReportPage() {
       <section className="flex flex-col gap-4 px-6 sm:flex-row sm:items-end sm:justify-between sm:px-8">
         <div className="max-w-3xl space-y-2">
           <h2 className="text-3xl font-bold text-slate-900">Resoconto alimentare</h2>
-          <p className="max-w-2xl text-lg text-slate-700 font-medium">Un resoconto dei pasti consumati e dei progressi alimentari.</p>
+          <p className="max-w-2xl text-lg text-slate-700">Un resoconto dei pasti consumati e dei progressi alimentari.</p>
         </div>
         <button onClick={() => window.location.reload()} className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
           Aggiorna dati
@@ -138,7 +138,7 @@ export default function ReportPage() {
                   <p className="text-3xl font-bold text-slate-900">{item.total}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Pasti giornalieri</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Pasti giornalieri (media)</p>
                   <p className="text-3xl font-bold text-slate-900">{item.dailyAvg}</p>
                 </div>
                 <div>
