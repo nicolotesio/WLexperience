@@ -14,7 +14,7 @@ const initialState: MealInput = {
   description: '',
   meal_composition: [], 
   satisfied: true,
-  hunger_level: 3, // Fame impostata in automatico su 3/5
+  hunger_level: 3,
   notes: null,
 };
 
@@ -50,7 +50,6 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isValid) {
-      // Alert semplificato come richiesto
       setError('Inserisci una descrizione o seleziona la composizione del pasto');
       return;
     }
@@ -76,7 +75,6 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
       onSuccess();
       window.setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error(err);
       setError('Impossibile salvare il pasto. Riprova più tardi.');
     } finally {
       setLoading(false);
@@ -84,13 +82,14 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   };
 
   const labelStyle = "text-sm font-semibold text-slate-700";
+  const inputStyle = "w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 box-border";
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white/80 p-6 shadow-soft backdrop-blur-sm sm:p-8">
+    <section className="rounded-[2rem] border border-slate-200 bg-white/80 p-5 shadow-soft backdrop-blur-sm sm:p-8">
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-slate-900">Aggiungi un pasto</h2>
 
-        <form className="grid gap-6" onSubmit={handleSubmit}>
+        <form className="grid gap-6 w-full overflow-hidden" onSubmit={handleSubmit}>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2">
               <span className={labelStyle}>Data e ora</span>
@@ -98,7 +97,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
                 type="datetime-local"
                 value={form.meal_datetime}
                 onChange={(event) => handleChange('meal_datetime', event.target.value)}
-                className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                className={inputStyle}
                 required
               />
             </label>
@@ -108,7 +107,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
               <select
                 value={form.user_name}
                 onChange={(event) => handleChange('user_name', event.target.value as MealInput['user_name'])}
-                className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                className={inputStyle}
               >
                 <option value="Silvia">Silvia</option>
                 <option value="Nicolò">Nicolò</option>
@@ -116,9 +115,10 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </label>
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-3 overflow-hidden">
             <span className={labelStyle}>Composizione pasto</span>
-            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            {/* Scroll orizzontale pulito per i bottoni */}
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 no-scrollbar">
               {compositionOptions.map((option) => {
                 const isSelected = form.meal_composition.includes(option);
                 return (
@@ -126,7 +126,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
                     key={option}
                     type="button"
                     onClick={() => toggleComposition(option)}
-                    className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition ${
+                    className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition shrink-0 ${
                       isSelected
                         ? 'border-brand-500 bg-brand-500 text-white shadow-sm'
                         : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
@@ -145,10 +145,10 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
               <select
                 value={form.satisfied ? 'soddisfatto' : 'non-soddisfatto'}
                 onChange={(event) => handleChange('satisfied', event.target.value === 'soddisfatto')}
-                className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                className={inputStyle}
               >
-                <option value="soddisfatto">Soddisfatto: ho mangiato in modo equilibrato</option>
-                <option value="non-soddisfatto">Non soddisfatto: ho esagerato</option>
+                <option value="soddisfatto">Soddisfatto</option>
+                <option value="non-soddisfatto">Non soddisfatto</option>
               </select>
             </label>
 
@@ -157,7 +157,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
               <select
                 value={form.hunger_level ?? ''}
                 onChange={(event) => handleChange('hunger_level', event.target.value ? Number(event.target.value) : undefined)}
-                className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                className={inputStyle}
                 required
               >
                 {[1, 2, 3, 4, 5].map((value) => (
@@ -176,7 +176,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
               onChange={(event) => handleChange('description', event.target.value)}
               placeholder="Cosa hai mangiato?"
               rows={3}
-              className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              className={`${inputStyle} resize-none`}
             />
           </label>
 
