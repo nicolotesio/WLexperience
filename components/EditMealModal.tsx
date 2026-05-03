@@ -98,7 +98,8 @@ export default function EditMealModal({ meal, isOpen, onClose, onSuccess }: Edit
   if (!isOpen) return null;
 
   const labelStyle = "text-sm font-semibold text-slate-700";
-  const inputStyle = "w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 box-border";
+  // Aggiunto box-border e max-w-full per la stabilità su mobile
+  const inputStyle = "w-full max-w-full box-border rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">

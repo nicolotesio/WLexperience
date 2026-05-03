@@ -82,7 +82,8 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   };
 
   const labelStyle = "text-sm font-semibold text-slate-700";
-  const inputStyle = "w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 box-border";
+  // Aggiunto box-border e max-w-full per evitare lo sborramento a destra
+  const inputStyle = "w-full max-w-full box-border rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white/80 p-5 shadow-soft backdrop-blur-sm sm:p-8">
@@ -91,14 +92,13 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
 
         <form className="grid gap-6 w-full max-w-full overflow-hidden" onSubmit={handleSubmit}>
           <div className="grid gap-4 sm:grid-cols-2">
-            {/* min-w-0 impedisce all'input di forzare la larghezza del contenitore su mobile */}
             <label className="grid gap-2 min-w-0">
               <span className={labelStyle}>Data e ora</span>
               <input
                 type="datetime-local"
                 value={form.meal_datetime}
                 onChange={(event) => handleChange('meal_datetime', event.target.value)}
-                className={`${inputStyle} block w-full`}
+                className={inputStyle}
                 required
               />
             </label>
@@ -118,7 +118,6 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
 
           <div className="grid gap-3">
             <span className={labelStyle}>Composizione pasto</span>
-            {/* flex-wrap permette ai bottoni di andare a capo automaticamente senza scroll */}
             <div className="flex flex-wrap gap-2">
               {compositionOptions.map((option) => {
                 const isSelected = form.meal_composition.includes(option);
