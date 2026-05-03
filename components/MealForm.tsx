@@ -9,10 +9,10 @@ const compositionOptions = ['Snack dolce', 'Snack salato', 'Primo', 'Secondo', '
 type CompositionOption = (typeof compositionOptions)[number];
 
 const initialState: MealInput = {
-  meal_datetime: '', 
+  meal_datetime: '',
   user_name: 'Silvia',
   description: '',
-  meal_composition: [], 
+  meal_composition: [],
   satisfied: true,
   hunger_level: 3,
   notes: null,
@@ -31,7 +31,9 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   }, []);
 
   const isValid = useMemo(() => {
-    const hasContext = (form.description?.trim().length ?? 0) > 0 || form.meal_composition.length > 0;
+    const hasContext =
+      (form.description?.trim().length ?? 0) > 0 ||
+      form.meal_composition.length > 0;
     return form.meal_datetime.trim().length > 0 && hasContext;
   }, [form]);
 
@@ -67,11 +69,14 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
 
       await addMealClient(payload);
       setSuccess('Pasto salvato!');
-      
+
       const now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-      setForm({ ...initialState, meal_datetime: now.toISOString().slice(0, 16) });
-      
+      setForm({
+        ...initialState,
+        meal_datetime: now.toISOString().slice(0, 16),
+      });
+
       onSuccess();
       window.setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -82,32 +87,49 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   };
 
   const labelStyle = "text-sm font-semibold text-slate-700";
-  // Aggiunto box-border e max-w-full per evitare lo sborramento a destra
-  const inputStyle = "w-full max-w-full box-border rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
+
+  // FIX: aggiunto min-w-0
+  const inputStyle =
+    "w-full min-w-0 max-w-full box-border rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
 
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white/80 p-5 shadow-soft backdrop-blur-sm sm:p-8">
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-900">Aggiungi un pasto</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">
+          Aggiungi un pasto
+        </h2>
 
-        <form className="grid gap-6 w-full max-w-full overflow-hidden" onSubmit={handleSubmit}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2 min-w-0">
+        {/* FIX: min-w-0 + overflow-hidden */}
+        <form
+          className="grid w-full max-w-full min-w-0 gap-6 overflow-hidden"
+          onSubmit={handleSubmit}
+        >
+          {/* FIX: min-w-0 sulla grid */}
+          <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+            {/* FIX: overflow-hidden + min-w-0 */}
+            <label className="grid min-w-0 max-w-full gap-2 overflow-hidden">
               <span className={labelStyle}>Data e ora</span>
               <input
                 type="datetime-local"
                 value={form.meal_datetime}
-                onChange={(event) => handleChange('meal_datetime', event.target.value)}
-                className={inputStyle}
+                onChange={(event) =>
+                  handleChange('meal_datetime', event.target.value)
+                }
+                className={`${inputStyle} appearance-none`}
                 required
               />
             </label>
 
-            <label className="grid gap-2 min-w-0">
+            <label className="grid min-w-0 gap-2">
               <span className={labelStyle}>Utente</span>
               <select
                 value={form.user_name}
-                onChange={(event) => handleChange('user_name', event.target.value as MealInput['user_name'])}
+                onChange={(event) =>
+                  handleChange(
+                    'user_name',
+                    event.target.value as MealInput['user_name']
+                  )
+                }
                 className={inputStyle}
               >
                 <option value="Silvia">Silvia</option>
@@ -140,11 +162,16 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2">
+            <label className="grid min-w-0 gap-2">
               <span className={labelStyle}>Controllo</span>
               <select
                 value={form.satisfied ? 'soddisfatto' : 'non-soddisfatto'}
-                onChange={(event) => handleChange('satisfied', event.target.value === 'soddisfatto')}
+                onChange={(event) =>
+                  handleChange(
+                    'satisfied',
+                    event.target.value === 'soddisfatto'
+                  )
+                }
                 className={inputStyle}
               >
                 <option value="soddisfatto">Soddisfatto</option>
@@ -152,11 +179,18 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
               </select>
             </label>
 
-            <label className="grid gap-2">
+            <label className="grid min-w-0 gap-2">
               <span className={labelStyle}>Livello fame</span>
               <select
                 value={form.hunger_level ?? ''}
-                onChange={(event) => handleChange('hunger_level', event.target.value ? Number(event.target.value) : undefined)}
+                onChange={(event) =>
+                  handleChange(
+                    'hunger_level',
+                    event.target.value
+                      ? Number(event.target.value)
+                      : undefined
+                  )
+                }
                 className={inputStyle}
                 required
               >
@@ -169,19 +203,25 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </label>
           </div>
 
-          <label className="grid gap-2">
+          <label className="grid min-w-0 gap-2">
             <span className={labelStyle}>Descrizione e note</span>
             <textarea
               value={form.description || ''}
-              onChange={(event) => handleChange('description', event.target.value)}
+              onChange={(event) =>
+                handleChange('description', event.target.value)
+              }
               placeholder="Cosa hai mangiato?"
               rows={3}
               className={`${inputStyle} resize-none`}
             />
           </label>
 
-          {error ? <p className="text-sm text-rose-600 font-medium">{error}</p> : null}
-          {success ? <p className="text-sm text-emerald-700 font-medium">{success}</p> : null}
+          {error ? (
+            <p className="text-sm font-medium text-rose-600">{error}</p>
+          ) : null}
+          {success ? (
+            <p className="text-sm font-medium text-emerald-700">{success}</p>
+          ) : null}
 
           <button
             type="submit"
