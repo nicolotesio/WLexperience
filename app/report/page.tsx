@@ -96,9 +96,8 @@ export default function ReportPage() {
     <div className="space-y-10 pb-10">
       <section className="rounded-[2rem] border border-slate-200 bg-white/80 p-6 shadow-soft backdrop-blur-sm sm:p-8">
         <div className="max-w-3xl space-y-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Resoconto</p>
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Dashboard alimentare</h1>
-          <p className="max-w-2xl text-slate-600">Misura lo stato d’animo alimentare e il progresso settimanale con un report chiaro e positivo.</p>          <button
+          <p className="max-w-2xl text-slate-600">Un resoconto dei pasti consumati e dei progressi alimentari.</p>          <button
             type="button"
             onClick={() => window.location.reload()}
             className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"

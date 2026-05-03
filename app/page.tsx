@@ -115,7 +115,7 @@ export default function HomePage() {
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Blog dei pasti</h2>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Blog dei pasti</h1>
             <p className="text-sm text-slate-500">Ultimi pasti ordinati per data decrescente.</p>
           </div>
           <button
