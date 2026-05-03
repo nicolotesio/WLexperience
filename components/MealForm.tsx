@@ -89,20 +89,21 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-slate-900">Aggiungi un pasto</h2>
 
-        <form className="grid gap-6 w-full overflow-hidden" onSubmit={handleSubmit}>
+        <form className="grid gap-6 w-full max-w-full overflow-hidden" onSubmit={handleSubmit}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2">
+            {/* min-w-0 impedisce all'input di forzare la larghezza del contenitore su mobile */}
+            <label className="grid gap-2 min-w-0">
               <span className={labelStyle}>Data e ora</span>
               <input
                 type="datetime-local"
                 value={form.meal_datetime}
                 onChange={(event) => handleChange('meal_datetime', event.target.value)}
-                className={inputStyle}
+                className={`${inputStyle} block w-full`}
                 required
               />
             </label>
 
-            <label className="grid gap-2">
+            <label className="grid gap-2 min-w-0">
               <span className={labelStyle}>Utente</span>
               <select
                 value={form.user_name}
@@ -115,10 +116,10 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </label>
           </div>
 
-          <div className="grid gap-3 overflow-hidden">
+          <div className="grid gap-3">
             <span className={labelStyle}>Composizione pasto</span>
-            {/* Scroll orizzontale pulito per i bottoni */}
-            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 no-scrollbar">
+            {/* flex-wrap permette ai bottoni di andare a capo automaticamente senza scroll */}
+            <div className="flex flex-wrap gap-2">
               {compositionOptions.map((option) => {
                 const isSelected = form.meal_composition.includes(option);
                 return (
@@ -126,7 +127,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
                     key={option}
                     type="button"
                     onClick={() => toggleComposition(option)}
-                    className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition shrink-0 ${
+                    className={`rounded-full border px-4 py-2 text-sm transition ${
                       isSelected
                         ? 'border-brand-500 bg-brand-500 text-white shadow-sm'
                         : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
