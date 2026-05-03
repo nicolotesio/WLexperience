@@ -1,20 +1,20 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { addMealClient } from '@/lib/meals';
-import { MealComposition, MealInput } from '@/types/meal';
+import { MealInput } from '@/types/meal';
 
 const compositionOptions = ['Snack dolce', 'Snack salato', 'Primo', 'Secondo', 'Dessert', 'Frutta'] as const;
 
 type CompositionOption = (typeof compositionOptions)[number];
 
 const initialState: MealInput = {
-  meal_datetime: new Date().toISOString().slice(0, 16),
+  meal_datetime: '', 
   user_name: 'Silvia',
   description: '',
-  meal_composition: ['Primo'],
+  meal_composition: [], 
   satisfied: true,
-  hunger_level: undefined,
+  hunger_level: 3, // Fame impostata in automatico su 3/5
   notes: null,
 };
 
@@ -24,10 +24,16 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const isValid = useMemo(
-    () => form.meal_datetime.trim().length > 0 && form.meal_composition.length > 0,
-    [form],
-  );
+  useEffect(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    setForm(prev => ({ ...prev, meal_datetime: now.toISOString().slice(0, 16) }));
+  }, []);
+
+  const isValid = useMemo(() => {
+    const hasContext = (form.description?.trim().length ?? 0) > 0 || form.meal_composition.length > 0;
+    return form.meal_datetime.trim().length > 0 && hasContext;
+  }, [form]);
 
   const handleChange = <K extends keyof MealInput>(field: K, value: MealInput[K]) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -44,7 +50,8 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isValid) {
-      setError('Compila tutti i campi obbligatori prima di inviare e seleziona almeno una composizione.');
+      // Alert semplificato come richiesto
+      setError('Inserisci una descrizione o seleziona la composizione del pasto');
       return;
     }
 
@@ -53,18 +60,19 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
 
     try {
       const payload: MealInput = {
+        ...form,
         meal_datetime: new Date(form.meal_datetime).toISOString(),
-        user_name: form.user_name,
         description: form.description?.trim() || null,
-        meal_composition: form.meal_composition,
-        satisfied: form.satisfied,
-        hunger_level: form.hunger_level ? Number(form.hunger_level) : null,
-        notes: null,
+        hunger_level: Number(form.hunger_level),
       };
 
       await addMealClient(payload);
       setSuccess('Pasto salvato!');
-      setForm(initialState);
+      
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      setForm({ ...initialState, meal_datetime: now.toISOString().slice(0, 16) });
+      
       onSuccess();
       window.setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -75,17 +83,17 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
     }
   };
 
+  const labelStyle = "text-sm font-semibold text-slate-700";
+
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white/80 p-6 shadow-soft backdrop-blur-sm sm:p-8">
       <div className="space-y-4">
-        <div>
-          <h2 className="text-2xl font-semibold text-slate-900">Aggiungi un pasto</h2>
-        </div>
+        <h2 className="text-2xl font-semibold text-slate-900">Aggiungi un pasto</h2>
 
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+        <form className="grid gap-6" onSubmit={handleSubmit}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2 text-sm text-slate-700">
-              Data e ora
+            <label className="grid gap-2">
+              <span className={labelStyle}>Data e ora</span>
               <input
                 type="datetime-local"
                 value={form.meal_datetime}
@@ -95,8 +103,8 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
               />
             </label>
 
-            <label className="grid gap-2 text-sm text-slate-700">
-              Utente
+            <label className="grid gap-2">
+              <span className={labelStyle}>Utente</span>
               <select
                 value={form.user_name}
                 onChange={(event) => handleChange('user_name', event.target.value as MealInput['user_name'])}
@@ -108,12 +116,9 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </label>
           </div>
 
-          <div className="grid gap-4">
-            <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
-              <span>Composizione pasto</span>
-              <span className="text-slate-500">Seleziona almeno una voce</span>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="grid gap-3">
+            <span className={labelStyle}>Composizione pasto</span>
+            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
               {compositionOptions.map((option) => {
                 const isSelected = form.meal_composition.includes(option);
                 return (
@@ -134,9 +139,9 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <label className="grid gap-2 text-sm text-slate-700">
-              Stato pasto
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="grid gap-2">
+              <span className={labelStyle}>Controllo</span>
               <select
                 value={form.satisfied ? 'soddisfatto' : 'non-soddisfatto'}
                 onChange={(event) => handleChange('satisfied', event.target.value === 'soddisfatto')}
@@ -147,44 +152,41 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
               </select>
             </label>
 
-            <label className="grid gap-2 text-sm text-slate-700">
-              Livello fame (opzionale)
+            <label className="grid gap-2">
+              <span className={labelStyle}>Livello fame</span>
               <select
                 value={form.hunger_level ?? ''}
                 onChange={(event) => handleChange('hunger_level', event.target.value ? Number(event.target.value) : undefined)}
                 className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                required
               >
-                <option value="">---</option>
                 {[1, 2, 3, 4, 5].map((value) => (
                   <option key={value} value={value}>
-                    {value}
+                    {value} {value === 1 ? '(Basso)' : value === 5 ? '(Alto)' : ''}
                   </option>
                 ))}
               </select>
             </label>
           </div>
 
-          <div className="grid gap-4">
-            <h3 className="text-sm font-semibold text-slate-700">Descrizione e note</h3>
-            <label className="grid gap-2 text-sm text-slate-700">
-              Descrizione (opzionale)
-              <textarea
-                value={form.description || ''}
-                onChange={(event) => handleChange('description', event.target.value)}
-                placeholder="Cosa hai mangiato?"
-                rows={4}
-                className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-              />
-            </label>
-          </div>
+          <label className="grid gap-2">
+            <span className={labelStyle}>Descrizione e note</span>
+            <textarea
+              value={form.description || ''}
+              onChange={(event) => handleChange('description', event.target.value)}
+              placeholder="Cosa hai mangiato?"
+              rows={3}
+              className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            />
+          </label>
 
-          {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-          {success ? <p className="text-sm text-emerald-700">{success}</p> : null}
+          {error ? <p className="text-sm text-rose-600 font-medium">{error}</p> : null}
+          {success ? <p className="text-sm text-emerald-700 font-medium">{success}</p> : null}
 
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex w-full items-center justify-center rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-500/10 transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="inline-flex w-full items-center justify-center rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-500/10 transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-300 active:scale-95"
           >
             {loading ? 'Salvataggio...' : 'Aggiungi pasto'}
           </button>

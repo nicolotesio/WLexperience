@@ -91,32 +91,33 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10 pb-10">
-      <section className="rounded-[2rem] border border-slate-200 bg-white/80 p-6 shadow-soft backdrop-blur-sm sm:p-8">
-        <div className="max-w-3xl space-y-4">
-          <h2 className="text-3xl font-semibold text-slate-600">Live blog dei pasti</h2>
-          <p className="max-w-2xl text-slate-600">Piccole scelte, grande costanza. Registra i tuoi pasti e tieni traccia dei progressi.</p>
-        </div>
+      {/* Header superiore con stile aggiornato */}
+      <section className="max-w-3xl space-y-2 px-6 sm:px-8">
+        <h2 className="text-3xl font-bold text-slate-900">Live blog dei pasti</h2>
+        <p className="max-w-2xl text-lg text-slate-700">
+          Piccole scelte, grande costanza. Registra i tuoi pasti e tieni traccia dei progressi.
+        </p>
       </section>
 
       <MealForm onSuccess={handleAddMeal} />
 
       {message ? (
-        <div className="rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 shadow-soft">
+        <div className="mx-6 sm:mx-8 rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 shadow-soft">
           {message}
         </div>
       ) : null}
 
       {error ? (
-        <div className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900 shadow-soft">
+        <div className="mx-6 sm:mx-8 rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900 shadow-soft">
           {error}
         </div>
       ) : null}
 
       <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        {/* Intestazione della lista con stile aggiornato */}
+        <div className="flex flex-col gap-3 px-6 sm:flex-row sm:items-end sm:justify-between sm:px-8">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Blog dei pasti</h1>
-            <p className="text-sm text-slate-500">Ultimi pasti ordinati per data decrescente.</p>
+            <p className="text-lg text-slate-700">Ultimi pasti ordinati per data decrescente.</p>
           </div>
           <button
             type="button"
@@ -127,12 +128,13 @@ export default function HomePage() {
           </button>
         </div>
 
+        {/* Lista delle card */}
         {loading ? (
           <div className="flex justify-center py-16">
             <LoadingSpinner />
           </div>
         ) : meals.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-500">
+          <div className="mx-6 sm:mx-8 rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-slate-500">
             Nessun pasto registrato ancora. Aggiungi il primo pasto per iniziare il diario.
           </div>
         ) : (
