@@ -2,11 +2,9 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { addMealClient } from '@/lib/meals';
-import { MealInput } from '@/types/meal';
+import { MEAL_COMPOSITIONS, MealComposition, MealInput } from '@/types/meal';
+import { toLocalInputValue } from '@/lib/dates';
 
-const compositionOptions = ['Snack dolce', 'Snack salato', 'Primo', 'Secondo', 'Dessert', 'Frutta'] as const;
-
-type CompositionOption = (typeof compositionOptions)[number];
 
 const initialState: MealInput = {
   meal_datetime: '',
@@ -25,9 +23,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    setForm(prev => ({ ...prev, meal_datetime: now.toISOString().slice(0, 16) }));
+    setForm(prev => ({ ...prev, meal_datetime: toLocalInputValue(new Date()) }));
   }, []);
 
   const isValid = useMemo(() => {
@@ -41,7 +37,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const toggleComposition = (option: CompositionOption) => {
+  const toggleComposition = (option: MealComposition) => {
     const next = form.meal_composition.includes(option)
       ? form.meal_composition.filter((item) => item !== option)
       : [...form.meal_composition, option];
@@ -70,11 +66,9 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
       await addMealClient(payload);
       setSuccess('Pasto salvato!');
 
-      const now = new Date();
-      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
       setForm({
         ...initialState,
-        meal_datetime: now.toISOString().slice(0, 16),
+        meal_datetime: toLocalInputValue(new Date()),
       });
 
       onSuccess();
@@ -141,7 +135,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
           <div className="grid gap-3">
             <span className={labelStyle}>Composizione pasto</span>
             <div className="flex flex-wrap gap-2">
-              {compositionOptions.map((option) => {
+              {MEAL_COMPOSITIONS.map((option) => {
                 const isSelected = form.meal_composition.includes(option);
                 return (
                   <button
@@ -180,7 +174,7 @@ export default function MealForm({ onSuccess }: { onSuccess: () => void }) {
             </label>
 
             <label className="grid min-w-0 gap-2">
-              <span className={labelStyle}>Livello fame</span>
+              <span className={labelStyle}>Livello fame (prima di mangiare)</span>
               <select
                 value={form.hunger_level ?? ''}
                 onChange={(event) =>

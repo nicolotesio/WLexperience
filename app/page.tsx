@@ -5,6 +5,7 @@ import MealForm from '@/components/MealForm';
 import MealCard from '@/components/MealCard';
 import EditMealModal from '@/components/EditMealModal';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import TodaySummary from '@/components/TodaySummary';
 import { Meal } from '@/types/meal';
 import { deleteMealClient } from '@/lib/meals';
 
@@ -98,6 +99,8 @@ export default function HomePage() {
           Piccole scelte, grande costanza. Registra i tuoi pasti e tieni traccia dei progressi.
         </p>
       </section>
+
+      {!loading && !error ? <TodaySummary meals={meals} /> : null}
 
       <MealForm onSuccess={handleAddMeal} />
 

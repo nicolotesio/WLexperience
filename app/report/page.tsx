@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format, subDays } from 'date-fns';
 import { ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Meal } from '@/types/meal';
+import { Meal, USERS } from '@/types/meal';
+import { mealsInWindow, periodStats, weeklyTips } from '@/lib/insights';
 
 const colors = {
+  verdura: '#16a34a',
   primo: '#6366f1',
   secondo: '#22c55e',
   dessert: '#f472b6',
@@ -19,6 +21,7 @@ const colors = {
 
 const getCategoryColor = (name: string) => {
   const category = name.toLowerCase();
+  if (category.includes('verdura')) return colors.verdura;
   if (category.includes('primo')) return colors.primo;
   if (category.includes('secondo')) return colors.secondo;
   if (category.includes('dessert')) return colors.dessert;
@@ -82,7 +85,27 @@ const buildSummary = (meals: Meal[]) => {
     };
   });
 
-  return { metrics, monthlyTrend };
+  const weekly = USERS.map((user) => {
+    const current = periodStats(mealsInWindow(meals, user, 7));
+    const previous = periodStats(mealsInWindow(meals, user, 7, 7));
+    return { user, current, previous, tips: weeklyTips(current, previous) };
+  });
+
+  return { metrics, monthlyTrend, weekly };
+};
+
+const weeklyRows = [
+  { key: 'meals', label: 'Pasti registrati', suffix: '', lowerIsBetter: null },
+  { key: 'controlPercent', label: 'Controllo', suffix: '%', lowerIsBetter: false },
+  { key: 'healthyPercent', label: 'Pasti con frutta/verdura', suffix: '%', lowerIsBetter: false },
+  { key: 'treats', label: 'Snack e dessert', suffix: '', lowerIsBetter: true },
+  { key: 'withoutHunger', label: 'Pasti con fame bassa', suffix: '', lowerIsBetter: true },
+  { key: 'late', label: 'Pasti dopo le 21', suffix: '', lowerIsBetter: true },
+] as const;
+
+const trendClass = (current: number, previous: number, lowerIsBetter: boolean | null) => {
+  if (lowerIsBetter === null || current === previous) return 'text-slate-900';
+  return current < previous === lowerIsBetter ? 'text-emerald-600' : 'text-rose-600';
 };
 
 export default function ReportPage() {
@@ -108,7 +131,7 @@ export default function ReportPage() {
     loadMeals();
   }, []);
 
-  const { metrics, monthlyTrend } = useMemo(() => buildSummary(meals), [meals]);
+  const { metrics, monthlyTrend, weekly } = useMemo(() => buildSummary(meals), [meals]);
 
   return (
     <div className="space-y-10 pb-10">
@@ -123,6 +146,53 @@ export default function ReportPage() {
       </section>
 
       {error && <div className="mx-6 sm:mx-8 rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-900 shadow-soft">{error}</div>}
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        {weekly.map((item) => (
+          <div key={item.user} className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-soft">
+            <h3 className={`text-2xl font-black italic tracking-tighter ${item.user === 'Silvia' ? 'text-purple-500' : 'text-blue-600'}`}>
+              {item.user.toUpperCase()} · ULTIMI 7 GIORNI
+            </h3>
+            <table className="mt-6 w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs font-bold uppercase tracking-widest text-slate-400">
+                  <th className="pb-2 font-bold"></th>
+                  <th className="pb-2 text-right font-bold">Settimana prima</th>
+                  <th className="pb-2 text-right font-bold">Questa settimana</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {weeklyRows.map((row) => (
+                  <tr key={row.key}>
+                    <td className="py-2 font-medium text-slate-700">{row.label}</td>
+                    <td className="py-2 text-right text-slate-500">
+                      {item.previous[row.key]}
+                      {row.suffix}
+                    </td>
+                    <td className={`py-2 text-right text-base font-bold ${trendClass(item.current[row.key], item.previous[row.key], row.lowerIsBetter)}`}>
+                      {item.current[row.key]}
+                      {row.suffix}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <ul className="mt-6 space-y-2">
+              {item.tips.map((tip) => (
+                <li
+                  key={tip.text}
+                  className={`rounded-2xl border px-4 py-3 text-sm ${
+                    tip.tone === 'good' ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'
+                  }`}
+                >
+                  {tip.tone === 'good' ? '✅ ' : '💡 '}
+                  {tip.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
         {metrics.map((item) => (

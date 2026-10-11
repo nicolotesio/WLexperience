@@ -2,11 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { updateMealClient } from '@/lib/meals';
-import { Meal, MealInput } from '@/types/meal';
+import { MEAL_COMPOSITIONS, Meal, MealComposition, MealInput } from '@/types/meal';
+import { toLocalInputValue } from '@/lib/dates';
 
-const compositionOptions = ['Snack dolce', 'Snack salato', 'Primo', 'Secondo', 'Dessert', 'Frutta'] as const;
-
-type CompositionOption = (typeof compositionOptions)[number];
 
 type EditMealModalProps = {
   meal: Meal | null;
@@ -32,7 +30,7 @@ export default function EditMealModal({ meal, isOpen, onClose, onSuccess }: Edit
   useEffect(() => {
     if (meal) {
       setForm({
-        meal_datetime: new Date(meal.meal_datetime).toISOString().slice(0, 16),
+        meal_datetime: toLocalInputValue(new Date(meal.meal_datetime)),
         user_name: meal.user_name,
         description: meal.description || '',
         meal_composition: meal.meal_composition,
@@ -55,7 +53,7 @@ export default function EditMealModal({ meal, isOpen, onClose, onSuccess }: Edit
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const toggleComposition = (option: CompositionOption) => {
+  const toggleComposition = (option: MealComposition) => {
     const next = form.meal_composition.includes(option)
       ? form.meal_composition.filter((item) => item !== option)
       : [...form.meal_composition, option];
@@ -164,7 +162,7 @@ export default function EditMealModal({ meal, isOpen, onClose, onSuccess }: Edit
             <div className="grid min-w-0 gap-3">
               <span className={labelStyle}>Composizione pasto</span>
               <div className="flex min-w-0 flex-wrap gap-2">
-                {compositionOptions.map((option) => {
+                {MEAL_COMPOSITIONS.map((option) => {
                   const isSelected = form.meal_composition.includes(option);
 
                   return (
@@ -204,7 +202,7 @@ export default function EditMealModal({ meal, isOpen, onClose, onSuccess }: Edit
               </label>
 
               <label className="grid min-w-0 gap-2">
-                <span className={labelStyle}>Livello fame</span>
+                <span className={labelStyle}>Livello fame (prima di mangiare)</span>
                 <select
                   value={form.hunger_level ?? ''}
                   onChange={(event) =>

@@ -6,6 +6,9 @@ WLexperience è una webapp realizzata con Next.js App Router, TypeScript e Tailw
 
 - Pagine responsive mobile-first: `Live Blog` e `Resoconto`
 - Integrazione con Supabase per archiviazione pasti
+- Riepilogo del giorno per utente: pasti, frutta/verdura, snack e dessert, serie di giorni in controllo
+- Resoconto settimanale (ultimi 7 giorni vs settimana prima) con suggerimenti pratici per dimagrire
+- Pagina `Peso` per registrare le pesate e vedere la curva del peso
 - Dashboard con grafici Recharts per monitorare soddisfazione e andamento settimanale
 - Componenti riutilizzabili e design moderno a card
 - Footer con disclaimer medico
@@ -83,8 +86,22 @@ alter table meals drop column if exists meal_type;
 alter table meals add column if not exists meal_composition text[] not null default array[]::text[];
 ```
 
+4. Crea la tabella `weights` per la pagina `Peso`:
 
-4. Imposta le variabili environment nella tua app Vercel o nel file `.env` locale.
+```sql
+create table if not exists weights (
+  id uuid primary key default uuid_generate_v4(),
+  created_at timestamptz default now(),
+  measured_on date not null,
+  user_name text check (user_name in ('Silvia', 'Nicolò')) not null,
+  weight_kg numeric(5,1) check (weight_kg between 30 and 300) not null,
+  unique (user_name, measured_on)
+);
+```
+
+Se hai attivato la Row Level Security su Supabase, aggiungi per `weights` le stesse policy già usate per `meals`.
+
+5. Imposta le variabili environment nella tua app Vercel o nel file `.env` locale.
 
 ## Deploy su Vercel
 
